@@ -44,8 +44,7 @@ namespace SelettoreFile
             if (tb_server.TextLength > 0 && tb_user.TextLength > 0 && fileToUpload.Count > 0)
             {
                 FtpClient conn = new FtpClient(tb_server.Text, tb_user.Text, tb_pw.Text);
-                string fileName = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\report_{DateTime.Now:yyyy-MM-dd}.txt";
-
+               
                 try
                 {
                     conn.ConnectTimeout = 600000;
@@ -58,22 +57,25 @@ namespace SelettoreFile
                     //Division of files in two lists that allow the correct creation of the report
 
                     foreach (string selectedFile in fileToUpload)
-                    {   
-                        string folder = Path.GetFileName(selectedFile).StartsWith("FT") ? "INVOICES" : "DOCUMENTS";
-                        conn.UploadFile(selectedFile, $@"{folder}\{Path.GetFileName(selectedFile)}", FtpRemoteExists.Overwrite, true);
-                        
+                    {
+                        string nameOfFile = Path.GetFileName(selectedFile);
+                        string folder = nameOfFile.StartsWith("FT") ? "INVOICES" : "DOCUMENTS";
+
+                        conn.UploadFile(selectedFile, $@"{folder}\{nameOfFile}", FtpRemoteExists.Skip, true);
+
                         if(folder == "INVOICES")
                         {
-                            invoices.Add(Path.GetFileName(selectedFile));
+                            invoices.Add(nameOfFile);
                         }
                         else
                         {
-                            documents.Add(Path.GetFileName(selectedFile));
+                            documents.Add(nameOfFile);
                         }
                     }
 
-                    //Creation of report file
+                    string fileName = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\report_{DateTime.Now:yyyy-MM-dd}.txt";
 
+                    //Creation of report file
                     if (File.Exists(fileName))
                     {
                         File.Delete(fileName);
@@ -114,6 +116,9 @@ namespace SelettoreFile
             {
                 fileToUpload.RemoveAt(lb_fileList.SelectedIndex);
                 lb_fileList.Items.RemoveAt(lb_fileList.SelectedIndex);
+            } else
+            {
+                MessageBox.Show("No element was selected.");
             }
         }
 
